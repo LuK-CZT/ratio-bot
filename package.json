@@ -1,0 +1,16 @@
+{
+  "name": "twt-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "twt.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.0.2",
+    "twitter-api-v2": "^1.12.6"
+  }
+}
