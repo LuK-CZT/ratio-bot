@@ -15,44 +15,44 @@ class RatioBot {
         this.tweetsArray = [];
     }
 
-    replyRatio(tweetId){
-        this.Client.v2.reply('Ratio', tweetId).then(res => {
-            console.log('Le tweet a bien été Ratio');
-        }).catch(err => console.log(err.data.title))
+    async replyRatio(tweetId){
+        await this.Client.v2.reply('Ratio', tweetId)
+        console.log('Le tweet a bien été Ratio');
     }
 
 
     async fetchTweetsByUser(nextToken) {
-
         const params = {
             max_results: 100,
             //exclude : 'replies'
         }
-
         if(nextToken) params.pagination_token = nextToken
-    
         const res = await this.Client.v2.userTimeline(this.targetId, params)
         this.tweetsArray = this.tweetsArray.concat(res.data.data)
         if (res.meta.next_token) await this.fetchTweetsByUser(res.meta.next_token)
     }
 
 
-    ratioAll(){
-        this.fetchTweetsByUser(null).then(res => {
-            this.tweetsArray.forEach(items => this.Client.v2.replyRatio(items.id))
-        }).catch(err => console.log(err.data.title))
+    async ratioAll(){
+        await this.fetchTweetsByUser(null)
+        this.tweetsArray.forEach(items => this.Client.v2.replyRatio(items.id))
     }
 
-    likeAll(){
-        this.fetchTweetsByUser(null).then(res => {
-            this.tweetsArray.forEach(items => this.Client.v2.like(this.userId, items.id))
-        }).catch(err => console.log(err.data.title))
+    async likeAll(){
+        await this.fetchTweetsByUser(null)
+        this.tweetsArray.forEach(items => this.Client.v2.like(this.userId, items.id))
     }
 
-    logAll(){
-        this.fetchTweetsByUser(null).then(res => {
-            this.tweetsArray.forEach(items => console.log(items))
-        }).catch(err => console.log(err.data.title))
+    async logAll(){
+        await this.fetchTweetsByUser(null)
+        this.tweetsArray.forEach(items => console.log(items))
+    }
+
+    async tweet(text){
+        await this.Client.v2.tweet(text)
     }
 
 }
+
+let x = new RatioBot('1118944139981279234');
+x.logAll()
