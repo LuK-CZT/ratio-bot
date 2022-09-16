@@ -1,5 +1,6 @@
 require('dotenv').config();
 const { TwitterApi } = require('twitter-api-v2');
+const pause = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
 class RatioBot {
 
@@ -21,30 +22,36 @@ class RatioBot {
     }
 
 
-    async fetchTweetsByUser(nextToken) {
+    async fetchTweetsByUser(nextToken , getNextPage, numberOfResults) {
         const params = {
-            max_results: 100,
-            //exclude : 'replies'
+            max_results: numberOfResults,
+            exclude : 'replies'
         }
+
         if(nextToken) params.pagination_token = nextToken
         const res = await this.Client.v2.userTimeline(this.targetId, params)
         this.tweetsArray = this.tweetsArray.concat(res.data.data)
-        if (res.meta.next_token) await this.fetchTweetsByUser(res.meta.next_token)
+        if (res.meta.next_token && getNextPage) await this.fetchTweetsByUser(res.meta.next_token , true, 100)
+    }
+
+    async getLast10tweets(){
+        const res = await this.Client.v2.userTimeline(this.targetId, {max_results : 10, exclude : 'replies'})
+        this.tweetsArray = res.data.data
     }
 
 
     async ratioAll(){
-        await this.fetchTweetsByUser(null)
+        await this.fetchTweetsByUser(null , true, 100)
         this.tweetsArray.forEach(items => this.Client.v2.replyRatio(items.id))
     }
 
     async likeAll(){
-        await this.fetchTweetsByUser(null)
+        await this.fetchTweetsByUser(null, true, 100)
         this.tweetsArray.forEach(items => this.Client.v2.like(this.userId, items.id))
     }
 
     async logAll(){
-        await this.fetchTweetsByUser(null)
+        await this.fetchTweetsByUser(null, true, 100)
         this.tweetsArray.forEach(items => console.log(items))
     }
 
@@ -52,7 +59,23 @@ class RatioBot {
         await this.Client.v2.tweet(text)
     }
 
+    async ratioOnPost(){
+        await this.getLast10tweets()
+        let lastTweet = this.tweetsArray[0];
+        console.log(lastTweet);
+        setInterval(async () => {
+            await this.getLast10tweets()
+            console.log(this.tweetsArray[0])
+            if(lastTweet.id === this.tweetsArray[0].id){
+                console.log(lastTweet);
+            } else {
+                this.replyRatio(this.tweetsArray[0].id)
+                this.tweetsArray = [];
+            }
+            
+        }, 5000 )
+        
+    }
+
 }
 
-let x = new RatioBot('1118944139981279234');
-x.logAll()
