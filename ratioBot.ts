@@ -1,10 +1,21 @@
 require('dotenv').config();
 const { TwitterApi } = require('twitter-api-v2');
-const pause = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+
+
+interface Params {
+    max_results: number,
+    exclude : string,
+    pagination_token ?: string
+}
 
 class RatioBot {
 
-    constructor(targetId , userId) {
+    targetId : string
+    userId : string
+    Client : any
+    tweetsArray : any[] 
+
+    constructor(targetId : string , userId : string) {
         this.targetId = targetId;
         this.userId = userId;
         this.Client = new TwitterApi({
@@ -16,17 +27,16 @@ class RatioBot {
         this.tweetsArray = [];
     }
 
-    async replyRatio(tweetId){
+    async replyRatio(tweetId : string){
         await this.Client.v2.reply('Ratio', tweetId)
         console.log('Le tweet a bien été Ratio');
     }
 
 
-    async fetchTweetsByUser(nextToken , getNextPage, numberOfResults) {
-        const params = {
+    async fetchTweetsByUser(nextToken : string | null , getNextPage: boolean, numberOfResults : number) {
+        const params : Params = {
             max_results: numberOfResults,
-            exclude : 'replies',
-            pagination_token : null
+            exclude : 'replies'
         }
 
         if(nextToken) params.pagination_token = nextToken
@@ -56,7 +66,7 @@ class RatioBot {
         this.tweetsArray.forEach(items => console.log(items))
     }
 
-    async tweet(text){
+    async tweet(text : string){
         await this.Client.v2.tweet(text)
     }
 
@@ -68,18 +78,14 @@ class RatioBot {
             await this.getLast10tweets()
             console.log(this.tweetsArray[0])
             if(lastTweet.id === this.tweetsArray[0].id){
-                console.log(lastTweet);
+                console.log('Pas de nouveaux tweets');
             } else {
                 this.replyRatio(this.tweetsArray[0].id)
                 this.tweetsArray = [];
             }
             
         }, 5000 )
-        
     }
 
 }
-
-let x = new RatioBot('1118944139981279234' , '1118944139981279234')
-x.logAll()
 
