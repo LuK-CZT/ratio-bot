@@ -79,7 +79,3 @@ class RatioBot {
     }
 
 }
-
-let x = new RatioBot('1118944139981279234' , '1118944139981279234')
-x.logAll()
-
